@@ -19,6 +19,7 @@ function App() {
   const [fromCurrency, setFromCurrency] = useState('EUR');
   const [toCurrency, setToCurrency] = useState('USD');
   const [amount, setAmount] = useState(1);
+  const [convertedAmount, setConvertedAmount] = useState(null);
 
   useEffect(() => {
    async function fetchData() {
@@ -28,6 +29,13 @@ function App() {
    }
     fetchData()
   }, [])
+
+
+    async function handleConvert() {
+      const res = await fetch(`${API_URL}/latest?amount=100&from=${fromCurrency}&to=${toCurrency}`)
+        const data = await res.json()
+        setConvertedAmount(data.rates[toCurrency])
+    }
 
 
   return (
@@ -52,10 +60,10 @@ function App() {
             })}
           </select>
         </div>
-        <button className="convert-button">Convert</button>
+        <button className="convert-button" onClick={handleConvert}>Convert</button>
         <p className="loading">Converting...</p>
 
-        <p className="result"></p>
+        <p className="result">{convertedAmount}</p>
       </div>
     </div>
   );
