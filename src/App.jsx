@@ -20,21 +20,40 @@ function App() {
   const [toCurrency, setToCurrency] = useState('USD');
   const [amount, setAmount] = useState(1);
   const [convertedAmount, setConvertedAmount] = useState(null);
+  const [error, setError] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
    async function fetchData() {
-     const res = await fetch(`${API_URL}/latest`)
-     const data = await res.json()
-     setState(Object.keys(data.rates))
+       try{
+           const res = await fetch(`${API_URL}/latest`)
+           const data = await res.json()
+           setState(Object.keys(data.rates))
+       }catch{
+           setError('ошибка')
+       }
+
    }
     fetchData()
   }, [])
 
 
     async function handleConvert() {
-      const res = await fetch(`${API_URL}/latest?amount=100&from=${fromCurrency}&to=${toCurrency}`)
-        const data = await res.json()
-        setConvertedAmount(data.rates[toCurrency])
+      if(!amount || amount <= 0) {
+          setError("Gi")
+          return
+      }
+      setError(null)
+      setIsLoading(true)
+      try {
+          const res = await fetch(`${API_URL}/latest?amount=100&from=${fromCurrency}&to=${toCurrency}`)
+          const data = await res.json()
+          setConvertedAmount(data.rates[toCurrency])
+      } catch{
+          setError('error')
+      }finally{
+          setIsLoading(false)
+      }
     }
 
 
@@ -43,7 +62,10 @@ function App() {
       <h1>Currency Exchange Calculator</h1>
 
       <div className="converter-container">
-        <p className="error"></p>
+          {error &&
+              <p className="error"></p>
+          }
+
 
         <div className="input-group">
           <input type="number" placeholder="Amount" className="input-field" value={amount} onChange={(e) => setAmount(e.target.value) } />
@@ -60,10 +82,14 @@ function App() {
             })}
           </select>
         </div>
-        <button className="convert-button" onClick={handleConvert}>Convert</button>
-        <p className="loading">Converting...</p>
+        <button className="convert-button" onClick={handleConvert}>
+            Convert
+        </button>
+          {isLoading &&
+              <p className="loading">Converting...</p>
+          }
+          {convertedAmount !== null && !isLoading &&  <p className="result">{amount}{fromCurrency}={convertedAmount.toFixed(2)}</p> }
 
-        <p className="result">{convertedAmount}</p>
       </div>
     </div>
   );
